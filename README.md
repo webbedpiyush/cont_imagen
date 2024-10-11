@@ -12,7 +12,7 @@ Cont. Imagen is a real-time image generation application built with Next.js, Rea
 
 ## Demo
 
-[Link to live demo](https://your-demo-url.com)
+[Link to live demo](https://cont-imagen.vercel.app/)
 
 ## Getting Started
 
@@ -80,4 +80,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
-Your Name - [@webbedpiyush](https://x.com/_webbedpiyush) 
+Twitter - [@webbedpiyush](https://x.com/_webbedpiyush) 
