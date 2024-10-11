@@ -10,7 +10,7 @@ let ratelimit: Ratelimit | undefined;
 if (process.env.UPSTASH_REDIS_REST_URL) {
   ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
-    limiter: Ratelimit.fixedWindow(500, "1440 m"),
+    limiter: Ratelimit.fixedWindow(300, "1440 m"),
     analytics: true,
     prefix: "contimagen",
   });
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       width: 1024,
       height: 768,
       seed: iterativeMode ? 123 : undefined,
-      steps: 3,
+      steps: 4,
       // @ts-expect-error
       response_format: "base64",
     });

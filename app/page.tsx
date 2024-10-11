@@ -1,34 +1,33 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { useQuery } from "@tanstack/react-query"
-import { useDebounce } from "@uidotdev/usehooks"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, ImageIcon, Github } from "lucide-react"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2, ImageIcon, Github } from "lucide-react";
 
 interface Images {
-  prompt: string
+  prompt: string;
   image: {
-    b64_json: string
-    timings: { inference: number }
-  }
+    b64_json: string;
+    timings: { inference: number };
+  };
 }
 
 export default function Component() {
-  const [APIKey, setAPIKey] = useState("")
-  const [prompt, setPrompt] = useState("")
-  const [iterativeMode, setIterativeMode] = useState(false)
-  const debouncedPrompt = useDebounce(prompt, 300)
-  const [images, setImages] = useState<Images[]>([])
-  const [activeIndex, setActiveIndex] = useState<number | undefined>()
+  const [APIKey, setAPIKey] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [iterativeMode, setIterativeMode] = useState(false);
+  const [images, setImages] = useState<Images[]>([]);
+  const [activeIndex, setActiveIndex] = useState<number | undefined>();
+  const [btnFetch, setBtnFetch] = useState(false);
 
   const { data: image, isFetching } = useQuery({
-    queryKey: [debouncedPrompt],
+    queryKey: [prompt, btnFetch],
     queryFn: async () => {
       const res = await fetch("api/imageGeneration", {
         method: "POST",
@@ -36,26 +35,33 @@ export default function Component() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ prompt, APIKey, iterativeMode }),
-      })
+      });
 
       if (!res.ok) {
-        throw new Error(await res.text())
+        throw new Error(await res.text());
       }
-      return (await res.json()) as Images["image"]
+      return (await res.json()) as Images["image"];
     },
     staleTime: Infinity,
     retry: false,
-    enabled: !!debouncedPrompt.trim(),
-  })
+    enabled: btnFetch,
+  });
+
+  useEffect(() => {
+    if (image) {
+      setBtnFetch(false);
+    }
+  }, [image]);
 
   useEffect(() => {
     if (image && !images.map((value) => value.image).includes(image)) {
-      setImages((images) => [...images, { prompt, image }])
-      setActiveIndex(images.length)
+      setImages((images) => [...images, { prompt, image }]);
+      setActiveIndex(images.length);
     }
-  }, [images, image, prompt])
+  }, [images, image, prompt]);
 
-  const activeImage = activeIndex !== undefined ? images[activeIndex].image : undefined
+  const activeImage =
+    activeIndex !== undefined ? images[activeIndex].image : undefined;
 
   return (
     <div className="min-h-screen text-gray-100">
@@ -102,7 +108,10 @@ export default function Component() {
             <CardContent className="p-6">
               <form className="space-y-4">
                 <div>
-                  <label htmlFor="prompt" className="mb-2 block text-sm font-medium">
+                  <label
+                    htmlFor="prompt"
+                    className="mb-2 block text-sm font-medium"
+                  >
                     Describe your image
                   </label>
                   <Textarea
@@ -123,7 +132,10 @@ export default function Component() {
                       checked={iterativeMode}
                       onCheckedChange={setIterativeMode}
                     />
-                    <label htmlFor="consistency-mode" className="text-sm font-medium">
+                    <label
+                      htmlFor="consistency-mode"
+                      className="text-sm font-medium"
+                    >
                       Consistency mode
                     </label>
                   </div>
@@ -135,15 +147,25 @@ export default function Component() {
                   )}
                 </div>
               </form>
+              <Button
+                onClick={() => setBtnFetch(true)}
+                className="mt-4"
+                disabled={isFetching}
+              >
+                Generate Image
+              </Button>
             </CardContent>
           </Card>
           <div className="flex flex-col items-center justify-center space-y-4">
             {!activeImage || !prompt ? (
               <div className="max-w-2xl text-center">
                 <ImageIcon className="mx-auto h-16 w-16 text-gray-400" />
-                <h2 className="mt-4 text-2xl font-semibold">Generate images in real time</h2>
+                <h2 className="mt-4 text-2xl font-semibold">
+                  Generate images in real time
+                </h2>
                 <p className="mt-2 text-gray-400">
-                  Enter a prompt and generate images in milliseconds as you keep on typing.
+                  Enter a prompt and generate images in milliseconds as you keep
+                  on typing.
                 </p>
               </div>
             ) : (
@@ -162,7 +184,9 @@ export default function Component() {
                     <Button
                       key={i}
                       variant="outline"
-                      className={`p-1 ${activeIndex === i ? "ring-2 ring-blue-500" : ""}`}
+                      className={`p-1 ${
+                        activeIndex === i ? "ring-2 ring-blue-500" : ""
+                      }`}
                       onClick={() => setActiveIndex(i)}
                     >
                       <Image
@@ -181,5 +205,5 @@ export default function Component() {
         </main>
       </div>
     </div>
-  )
+  );
 }
